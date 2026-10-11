@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Grid3X3, List, SlidersHorizontal } from "lucide-react";
 import ProductGrid from "../components/product/ProductGrid";
 import ProductFilters from "../components/product/ProductFilters";
@@ -7,7 +6,9 @@ import Pagination from "../components/ui/Pagination";
 
 import { useApp } from "../hooks/useApp";
 import { filterProducts, sortProducts, getUniqueBrands } from "../utils/format";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { getCategories } from "../api/products";
+import { setFeaturedCategories } from "../store/dataSlice";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -20,32 +21,39 @@ const sortOptions = [
   { value: "title-asc", label: "Name: A-Z" },
 ];
 
-export default function Shop({ loading, error, setLoading, setError }) {
-  const [allProducts, setAllProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-
+export default function Shop({ loading, error, setError }) {
   const [listView, setListView] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { filters, sortBy, setSortBy, setFilters } = useApp();
+  const { filters, sortBy, setSortBy } = useApp();
+  const dispatch = useDispatch();
   const { allProductsSlice, featuredCategories } = useSelector(
     (state) => state.data,
   );
+  const allProducts = allProductsSlice;
 
   useEffect(() => {
-    setLoading(true);
-    if (featuredCategories.length > 0 && allProductsSlice.length > 0) {
-      setCategories(featuredCategories);
-      setAllProducts(allProductsSlice);
-      setLoading(false);
-      setError(null);
-    } else {
-      setCategories([]);
-      setAllProducts([]);
-      setLoading(true);
-    }
-  }, [allProductsSlice, featuredCategories]);
+    if (featuredCategories.length > 0) return;
+
+    let isCurrent = true;
+
+    getCategories()
+      .then((categoriesData) => {
+        if (isCurrent) {
+          dispatch(setFeaturedCategories(categoriesData));
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setError("Failed to load categories. Please try again.");
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [dispatch, featuredCategories.length, setError]);
 
   const brands = useMemo(() => getUniqueBrands(allProducts), [allProducts]);
 
@@ -84,7 +92,7 @@ export default function Shop({ loading, error, setLoading, setError }) {
 
       <div className="flex gap-8">
         <ProductFilters
-          categories={categories}
+          categories={featuredCategories}
           brands={brands}
           isOpen={filterOpen}
           onClose={() => setFilterOpen(false)}

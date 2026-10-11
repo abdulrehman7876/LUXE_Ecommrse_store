@@ -4,6 +4,8 @@ import { useApp } from "../../hooks/useApp";
 import Rating from "../ui/Rating";
 import PriceDisplay from "../ui/PriceDisplay";
 import { getStockStatus } from "../../utils/format";
+import { useSelector } from "react-redux";
+import service from "../../appwrite/config";
 
 export default function ProductCard({ product, listView = false }) {
   const { addToCart, toggleWishlist, isInWishlist } = useApp();
@@ -11,6 +13,7 @@ export default function ProductCard({ product, listView = false }) {
   const stock = getStockStatus(product.stock);
   const reviewCount = product.reviews?.length;
 
+  const { status } = useSelector((state) => state.auth);
   const stockColors = {
     success: "text-green-600 bg-green-50",
     warning: "text-amber-600 bg-amber-50",
@@ -126,7 +129,27 @@ export default function ProductCard({ product, listView = false }) {
 
         <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 transition-transform duration-300 group-hover:translate-y-0">
           <button
-            onClick={() => addToCart(product)}
+            onClick={() => {
+              addToCart(product);
+              // service
+              //   .createCart(product)
+              //   .then((res) => console.log(res))
+              //   .catch((err) => console.log(err));
+              // service
+              //   .getCart({ product: product })
+              //   .then((res) =>
+              //     service
+              //       .updateCart({
+              //         product: product,
+              //         quantity: Math.min(
+              //           res.quantity + product.quantity,
+              //           product.stock,
+              //         ),
+              //       })
+              //       .then(),
+              //   )
+              //   .catch((err) => console.log(err));
+            }}
             disabled={product.stock <= 0}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >

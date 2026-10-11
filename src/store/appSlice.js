@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { loadCart, loadWishlist } from "../utils/storage";
-
+import { useSelector } from "react-redux";
+import service from "../appwrite/config";
 export const initialFilters = {
   category: "",
   minPrice: undefined,

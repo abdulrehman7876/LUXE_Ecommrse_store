@@ -1,10 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { SlidersHorizontal, Grid3X3, List } from "lucide-react";
 import ProductGrid from "../components/product/ProductGrid";
 import ProductFilters from "../components/product/ProductFilters";
 import Pagination from "../components/ui/Pagination";
 import { getProductsByCategory, getCategories } from "../api/products";
+import {
+  setCategoryProducts,
+  setFeaturedCategories,
+} from "../store/dataSlice";
 import { useApp } from "../hooks/useApp";
 import {
   filterProducts,
@@ -14,11 +19,10 @@ import {
 } from "../utils/format";
 
 const ITEMS_PER_PAGE = 12;
+const EMPTY_PRODUCTS = [];
 
 export default function Category() {
   const { category } = useParams();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [listView, setListView] = useState(false);
@@ -26,33 +30,84 @@ export default function Category() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { setFilters, filters, sortBy, setSortBy } = useApp();
+  const dispatch = useDispatch();
+  const { categoryProducts, featuredCategories } = useSelector(
+    (state) => state.data,
+  );
+  const hasCachedProducts = Object.prototype.hasOwnProperty.call(
+    categoryProducts,
+    category,
+  );
+  const products = useMemo(
+    () => categoryProducts[category] || EMPTY_PRODUCTS,
+    [categoryProducts, category],
+  );
 
   useEffect(() => {
     if (category) {
       setFilters({ category });
     }
-    console.log("category", category);
   }, [category, setFilters]);
 
   useEffect(() => {
+    if (!category) return;
+
+    let isCurrent = true;
+
+    if (hasCachedProducts && featuredCategories.length > 0) {
+      return () => {
+        isCurrent = false;
+      };
+    }
+
     async function load() {
       setLoading(true);
       setError(null);
       try {
         const [productsData, categoriesData] = await Promise.all([
-          getProductsByCategory(category, { limit: 100 }),
-          getCategories(),
+          hasCachedProducts
+            ? Promise.resolve(null)
+            : getProductsByCategory(category, { limit: 100 }),
+          featuredCategories.length > 0
+            ? Promise.resolve(null)
+            : getCategories(),
         ]);
-        setProducts(productsData.products);
-        setCategories(categoriesData);
+
+        if (!isCurrent) return;
+        if (productsData) {
+          dispatch(
+            setCategoryProducts({
+              category,
+              products: productsData.products,
+            }),
+          );
+        }
+        if (categoriesData) {
+          dispatch(setFeaturedCategories(categoriesData));
+        }
       } catch {
-        setError("Category not found or failed to load.");
+        if (isCurrent) {
+          setError({
+            category,
+            message: "Category not found or failed to load.",
+          });
+        }
       } finally {
-        setLoading(false);
+        if (isCurrent) {
+          setLoading(false);
+        }
       }
     }
     load();
-  }, [category]);
+    return () => {
+      isCurrent = false;
+    };
+  }, [
+    category,
+    dispatch,
+    featuredCategories.length,
+    hasCachedProducts,
+  ]);
 
   const brands = useMemo(() => getUniqueBrands(products), [products]);
 
@@ -83,15 +138,15 @@ export default function Category() {
         </p>
       </div>
 
-      {error && (
+      {error?.category === category && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-          {error}
+          {error.message}
         </div>
       )}
 
       <div className="flex gap-8">
         <ProductFilters
-          categories={categories}
+          categories={featuredCategories}
           brands={brands}
           isOpen={filterOpen}
           onClose={() => setFilterOpen(false)}
@@ -152,7 +207,7 @@ export default function Category() {
 
           <ProductGrid
             products={paginatedProducts}
-            loading={loading}
+            loading={loading && !hasCachedProducts}
             listView={listView}
             emptyTitle={`No products in ${categoryName}`}
           />

@@ -1,21 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useApp } from "../../hooks/useApp";
 import SearchBar from "../ui/SearchBar";
+import { useDispatch, useSelector } from "react-redux";
+import Account from "../../pages/Account";
+import authService from "../../appwrite/Auth";
+import { logOut } from "../../store/authSlice";
 
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
   { to: "/category", label: "Categories" },
-  { to: "deals", label: "Deals" },
+  { to: "/deals", label: "Deals" },
 ];
 
 export default function Navbar() {
+  const { status, userData } = useSelector((state) => state.auth);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openUser, setOpenUser] = useState(false);
   const { cartCount, wishlist } = useApp();
-
+  const dispatch = useDispatch();
   const closeMobile = () => setMobileOpen(false);
+
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    console.log(userData);
+
+    function handleClickOutside(event) {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setOpenUser(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  const handleLogout = () => {
+    authService.logout().then(() => {
+      dispatch(logOut());
+    });
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-brand-100 bg-white/95 backdrop-blur-sm">
@@ -83,14 +112,41 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-
-            <Link
-              to="/login"
-              className="hidden h-10 w-10 items-center justify-center rounded-lg text-brand-600 transition-colors hover:bg-brand-50 sm:flex"
-              aria-label="Account"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            {status ? (
+              <div
+                onClick={() => setOpenUser(!openUser)}
+                ref={popupRef}
+                className="hidden h-10 w-10 items-center justify-center rounded-lg text-brand-600 transition-colors hover:bg-brand-50 sm:flex cursor-pointer"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">
+                  {String(userData.name).slice(0, 1).toUpperCase()}
+                </div>
+                <div
+                  className={`z-2 ${openUser ? "flex opacity-100 visible" : "flex opacity-0 invisible"} transition-all delay-150 ease-in flex-col items-start justify-center border border-brand-300 shadow-2xl shadow-accent/10 bg-brand-50 fixed p-5 text-sm gap-3 mt-33 mr-35 w-45 rounded-lg`}
+                >
+                  <Link
+                    to="/account"
+                    className="hover:text-brand-900 cursor-pointer"
+                  >
+                    Manage my account
+                  </Link>
+                  <button
+                    className="hover:text-brand-900 cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="hidden h-10 w-10 items-center justify-center rounded-lg text-brand-600 transition-colors hover:bg-brand-50 sm:flex cursor-pointer"
+                aria-label="Account"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            )}
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -134,13 +190,39 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
-            <Link
-              to="/login"
-              onClick={closeMobile}
-              className="py-3 text-base font-medium text-brand-500"
-            >
-              Account
-            </Link>
+            {status ? (
+              <div
+                onClick={() => setOpenUser(!openUser)}
+                ref={popupRef}
+                className="py-3 text-base font-medium text-brand-500 cursor-pointer"
+              >
+                Account
+                <div
+                  className={`z-2 ${openUser ? "flex opacity-100 visible" : "flex opacity-0 invisible"} transition-all delay-150 ease-in flex-col items-start justify-center border border-brand-300 shadow-2xl shadow-accent/10 bg-brand-50 fixed p-5 text-sm gap-3 mt-2 w-45 rounded-lg`}
+                >
+                  <Link
+                    to="/account"
+                    className="hover:text-brand-900 cursor-pointer"
+                  >
+                    Manage my account
+                  </Link>
+                  <button
+                    className="hover:text-brand-900 cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                onClick={closeMobile}
+                className="py-3 text-base font-medium text-brand-500"
+              >
+                Account
+              </Link>
+            )}
           </nav>
         </div>
       )}

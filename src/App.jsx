@@ -17,6 +17,14 @@ import { useEffect, useState } from "react";
 import { setAllProductsSlice } from "./store/dataSlice";
 import { getProductList } from "./api/products";
 import { useDispatch } from "react-redux";
+import ManageAccount, {
+  AccountOverview,
+  Addresses,
+  Order,
+  PaymentMethods,
+  Security,
+} from "./pages/Account";
+import ToastNotification from "./components/ui/ToastNotification";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -39,6 +47,7 @@ export default function App() {
   }, []);
   return (
     <BrowserRouter>
+      <ToastNotification />
       <ScrollToTop />
       <Routes>
         <Route element={<Layout />}>
@@ -65,7 +74,7 @@ export default function App() {
               />
             }
           />
-          <Route path="category/" element={<Categories />} />
+          <Route path="category" element={<Categories />} />
           <Route path="shop/:category" element={<Category />} />
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="search" element={<Search />} />
@@ -74,6 +83,13 @@ export default function App() {
           <Route path="checkout" element={<Checkout />} />
           <Route path="login" element={<Login />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="account" element={<ManageAccount />}>
+            <Route index element={<AccountOverview />} />
+            <Route path="my-orders" element={<Order />} />
+            <Route path="addresses" element={<Addresses />} />
+            <Route path="payment-methods" element={<PaymentMethods />} />
+            <Route path="security" element={<Security />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
