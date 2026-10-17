@@ -3,10 +3,10 @@ import { Share2, Globe, Mail, Video, CreditCard } from 'lucide-react';
 
 const shopLinks = [
   { to: '/shop', label: 'All Products' },
-  { to: '/shop?deals=true', label: 'Deals' },
-  { to: '/category/womens-dresses', label: 'Women\'s Dresses' },
-  { to: '/category/mens-shirts', label: 'Men\'s Shirts' },
-  { to: '/category/fragrances', label: 'Fragrances' },
+  { to: '/deals', label: 'Deals' },
+  { to: '/shop/womens-dresses', label: 'Women\'s Dresses' },
+  { to: '/shop/mens-shirts', label: 'Men\'s Shirts' },
+  { to: '/shop/fragrances', label: 'Fragrances' },
 ];
 
 const serviceLinks = [

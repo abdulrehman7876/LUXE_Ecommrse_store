@@ -3,8 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   allProductsSlice: [],
   featuredCategories: [],
-  countMap: {},
-  categoryProducts: {},
+  catalogLoading: true,
+  catalogError: null,
 };
 
 const dataSlice = createSlice({
@@ -17,12 +17,9 @@ const dataSlice = createSlice({
     setFeaturedCategories(state, action) {
       state.featuredCategories = action.payload;
     },
-    setCountMap(state, action) {
-      state.countMap = action.payload;
-    },
-    setCategoryProducts(state, action) {
-      const { category, products } = action.payload;
-      state.categoryProducts[category] = products;
+    setCatalogStatus(state, action) {
+      state.catalogLoading = action.payload.loading;
+      state.catalogError = action.payload.error ?? null;
     },
   },
 });
@@ -30,8 +27,7 @@ const dataSlice = createSlice({
 export const {
   setAllProductsSlice,
   setFeaturedCategories,
-  setCountMap,
-  setCategoryProducts,
+  setCatalogStatus,
 } = dataSlice.actions;
 
 export default dataSlice.reducer;

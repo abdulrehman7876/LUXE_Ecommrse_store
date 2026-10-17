@@ -1,58 +1,32 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getCategories, getProductsByCategory } from "../../api/products";
 import CategoryCard from "../category/CategoryCard";
 import LoadingSkeleton from "../ui/LoadingSkeleton";
-import { useDispatch, useSelector } from "react-redux";
-import { setFeaturedCategories, setCountMap } from "../../store/dataSlice";
+import { useSelector } from "react-redux";
+
 export default function FeaturedCategories({ limit = 8 }) {
-  const [categories, setCategories] = useState([]);
-  const [counts, setCounts] = useState({});
-  const [loading, setLoading] = useState(true);
+  const { featuredCategories, allProductsSlice, catalogLoading } = useSelector(
+    (state) => state.data,
+  );
 
-  const dispatch = useDispatch();
-  const { featuredCategories, countMap } = useSelector((state) => state.data);
-
-  useEffect(() => {
-    setLoading(true);
-    if (featuredCategories.length > 0) {
+  const categories = useMemo(
+    () =>
       limit === 8
-        ? setCategories(featuredCategories.slice(0, limit))
-        : setCategories(featuredCategories);
-      setCounts(countMap);
-      setLoading(false);
-      return;
-    }
+        ? featuredCategories.slice(0, limit)
+        : featuredCategories,
+    [featuredCategories, limit],
+  );
 
-    async function load() {
-      try {
-        const cats = await getCategories();
-        const featured = cats.slice(0, limit);
-        // limit === 8 ? setCategories(featured) : setCategories(cats);
-        dispatch(setFeaturedCategories(cats));
+  const counts = useMemo(
+    () =>
+      allProductsSlice.reduce((acc, product) => {
+        acc[product.category] = (acc[product.category] || 0) + 1;
+        return acc;
+      }, {}),
+    [allProductsSlice],
+  );
 
-        const countPromises = cats.map(async (cat) => {
-          const data = await getProductsByCategory(cat.slug, { limit: 1 });
-          return { slug: cat.slug, total: data.total };
-        });
-        const countResults = await Promise.all(countPromises);
-        const countMap = {};
-        countResults.forEach(({ slug, total }) => {
-          countMap[slug] = total;
-        });
-        setCounts(countMap);
-        dispatch(setCountMap(countMap));
-      } catch {
-        setCategories([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-    if (categories.length === 0) {
-      setLoading(true);
-    }
-  }, [featuredCategories]);
+  const loading = catalogLoading && featuredCategories.length === 0;
 
   return (
     <section id="categories" className="py-16 lg:py-20">
@@ -78,7 +52,7 @@ export default function FeaturedCategories({ limit = 8 }) {
 
         <div className="mt-8">
           {loading ? (
-            <LoadingSkeleton variant="category" count={8} />
+            <LoadingSkeleton variant="category" count={limit} />
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {categories.map((cat) => (

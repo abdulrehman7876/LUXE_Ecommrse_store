@@ -5,24 +5,23 @@ import {
   MapPin,
   Lock,
   CreditCard,
-  Heart,
   LogOut,
   ChevronRight,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import { logIn, logOut } from "../store/authSlice";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import authService from "../appwrite/Auth";
+import authService from "../appwrite/auth";
 import { useEffect, useState } from "react";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useApp } from "../hooks/useApp";
+import { useDispatch, useSelector, useStore } from "react-redux";
+import { stopSync } from "../store/cartSync";
 
 export default function ManageAccount() {
-  const { userData } = useSelector((state) => state.auth);
+  const { status, userData, authChecked } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
-
+  const store = useStore();
   const nav = [
     {
       label: "Account Overview",
@@ -56,31 +55,24 @@ export default function ManageAccount() {
     },
   ];
 
-  const handleLogout = () => {
-    authService.logout().then(() => {
-      dispatch(logOut());
-      navigate("/");
-    });
+  const handleLogout = async () => {
+    await stopSync(store);
+    await authService.logout();
+    dispatch(logOut());
+    navigate("/");
   };
-  useEffect(() => {
-    authService
-      .getCurrentUser()
-      .then((userData) => {
-        if (userData) {
-          dispatch(logIn(userData));
-        } else {
-          dispatch(logOut());
-        }
-      })
-      .catch((err) =>
-        console.log("User Not Loged in authService :: Error", err.message),
-      )
-      .finally(() => setLoading(false));
-  }, []);
 
-  return loading ? (
-    <LoadingSkeleton />
-  ) : (
+  useEffect(() => {
+    if (authChecked && !status) {
+      navigate("/login");
+    }
+  }, [authChecked, status, navigate]);
+
+  if (!authChecked || !userData) {
+    return <LoadingSkeleton />;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
@@ -123,7 +115,6 @@ export default function ManageAccount() {
                   icon={item.icon}
                   size={item.size}
                   label={item.label}
-                  active={item.status}
                   slug={item.slug}
                 />
               ))}
@@ -347,14 +338,14 @@ export function Security() {
     }
     authService
       .updatePassword(passwords)
-      .then((res) => {
+      .then(() => {
         showToast("Password Changed Successfully");
         setPasswords({
           currentPassword: "",
           newPassword: "",
         });
       })
-      .catch((err) => {
+      .catch(() => {
         showToast("Failed to change password", "error");
       });
   };
@@ -447,14 +438,7 @@ export function PaymentMethods() {
 }
 
 /* Sidebar Item */
-function SidebarItem({
-  icon: Icon,
-  size,
-  label,
-  active = false,
-  slug,
-  ...props
-}) {
+function SidebarItem({ icon: Icon, size, label, slug, ...props }) {
   return (
     <NavLink
       end
@@ -512,30 +496,6 @@ function AccountCard({ icon, title, value, description, ...prop }) {
       <h3 className="mt-4 font-semibold text-gray-900">{title}</h3>
 
       <p className="mt-1 text-sm text-gray-500">{description}</p>
-    </div>
-  );
-}
-
-/* Order */
-function OrderItem({ order, date, amount, status }) {
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="font-medium text-gray-900">{order}</p>
-        <p className="mt-1 text-sm text-gray-500">{date}</p>
-      </div>
-
-      <div className="flex items-center justify-between gap-6 sm:justify-normal">
-        <span className="font-semibold text-gray-900">{amount}</span>
-
-        <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-          {status}
-        </span>
-
-        <button className="text-sm font-medium text-gray-700 hover:underline">
-          Details
-        </button>
-      </div>
     </div>
   );
 }

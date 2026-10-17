@@ -7,8 +7,9 @@ import { formatPrice } from "../../utils/format";
 export default function CartSummary({ showCheckout = true }) {
   const { cart, cartSubtotal, showToast } = useApp();
   const [promoCode, setPromoCode] = useState("");
-  const [discount, setDiscount] = useState(0);
+  const [promoApplied, setPromoApplied] = useState(false);
 
+  const discount = promoApplied ? cartSubtotal * 0.1 : 0;
   const shipping = cartSubtotal > 100 ? 0 : cart.length > 0 ? 9.99 : 0;
   const tax = cartSubtotal * 0.08;
   const total = cartSubtotal - discount + shipping + tax;
@@ -16,7 +17,7 @@ export default function CartSummary({ showCheckout = true }) {
   const handlePromo = (e) => {
     e.preventDefault();
     if (promoCode.toUpperCase() === "LUXE10") {
-      setDiscount(cartSubtotal * 0.1);
+      setPromoApplied(true);
       showToast("Promo code applied! 10% discount", "success");
     } else if (promoCode) {
       showToast("Invalid promo code", "error");

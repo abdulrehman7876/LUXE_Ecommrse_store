@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import HeroSection from "../components/home/HeroSection";
@@ -7,7 +7,6 @@ import PromotionalSection from "../components/home/PromotionalSection";
 import NewsletterSection from "../components/home/NewsletterSection";
 import ProductGrid from "../components/product/ProductGrid";
 import ProductCard from "../components/product/ProductCard";
-import { getProducts } from "../api/products";
 import { useSelector } from "react-redux";
 
 function ProductScroller({ title, subtitle, products, loading }) {
@@ -75,24 +74,22 @@ function ProductScroller({ title, subtitle, products, loading }) {
 }
 
 export default function Home() {
-  const [featured, setFeatured] = useState([]);
-  const [trending, setTrending] = useState([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
-  const [loadingTrending, setLoadingTrending] = useState(true);
+  const { allProductsSlice, catalogLoading } = useSelector(
+    (state) => state.data,
+  );
 
-  // const { allProductsSlice } = useSelector((state) => state.data);
-  const { allProductsSlice } = useSelector((state) => state.data);
-  useEffect(() => {
-    allProductsSlice.length > 0
-      ? setFeatured(allProductsSlice.slice(0, 8))
-      : setFeatured([]);
-    setLoadingFeatured(false);
+  const featured = useMemo(
+    () => allProductsSlice.slice(0, 8),
+    [allProductsSlice],
+  );
 
-    getProducts({ limit: 12, skip: 20, sortBy: "rating", order: "desc" })
-      .then((data) => setTrending(data.products))
-      .catch(() => setTrending(allProductsSlice.slice(20, 32)))
-      .finally(() => setLoadingTrending(false));
-  }, [allProductsSlice]);
+  const bestSellers = useMemo(
+    () =>
+      [...allProductsSlice]
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 12),
+    [allProductsSlice],
+  );
 
   return (
     <>
@@ -118,7 +115,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="mt-8">
-            <ProductGrid products={featured} loading={loadingFeatured} />
+            <ProductGrid products={featured} loading={catalogLoading} />
           </div>
         </div>
       </section>
@@ -128,8 +125,8 @@ export default function Home() {
       <ProductScroller
         title="Best Sellers"
         subtitle="Our most popular products this season"
-        products={trending}
-        loading={loadingTrending}
+        products={bestSellers}
+        loading={catalogLoading}
       />
 
       <NewsletterSection />

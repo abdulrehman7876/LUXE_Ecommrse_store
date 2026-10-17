@@ -1,97 +1,99 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Category from "./pages/Category";
-import ProductDetail from "./pages/ProductDetail";
 import Search from "./pages/Search";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
-import Checkout from "./pages/Checkout";
-import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/scrollToTop/ScrollToTop";
 import { Categories } from "./pages/Categories";
 import Deals from "./pages/Deals";
-import { useEffect, useState } from "react";
-import { setAllProductsSlice } from "./store/dataSlice";
-import { getProductList } from "./api/products";
-import { useDispatch } from "react-redux";
-import ManageAccount, {
-  AccountOverview,
-  Addresses,
-  Order,
-  PaymentMethods,
-  Security,
-} from "./pages/Account";
-import ToastNotification from "./components/ui/ToastNotification";
+import {
+  setAllProductsSlice,
+  setCatalogStatus,
+  setFeaturedCategories,
+} from "./store/dataSlice";
+import { getCategories, getProductList } from "./api/products";
+import LoadingSkeleton from "./components/ui/LoadingSkeleton";
+
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Login = lazy(() => import("./pages/Login"));
+const ManageAccount = lazy(() => import("./pages/Account"));
+const AccountOverview = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.AccountOverview })),
+);
+const Order = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.Order })),
+);
+const Addresses = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.Addresses })),
+);
+const PaymentMethods = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.PaymentMethods })),
+);
+const Security = lazy(() =>
+  import("./pages/Account").then((m) => ({ default: m.Security })),
+);
 
 export default function App() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
     async function load() {
-      setError(null);
+      dispatch(setCatalogStatus({ loading: true, error: null }));
       try {
-        const productsData = await getProductList({ limit: 100 });
+        const [productsData, categoriesData] = await Promise.all([
+          getProductList({ limit: 0 }),
+          getCategories(),
+        ]);
         dispatch(setAllProductsSlice(productsData.products));
+        dispatch(setFeaturedCategories(categoriesData));
+        dispatch(setCatalogStatus({ loading: false, error: null }));
       } catch {
-        setError("Failed to load products. Please try again.");
-      } finally {
-        setLoading(false);
+        dispatch(
+          setCatalogStatus({
+            loading: false,
+            error: "Failed to load products. Please try again.",
+          }),
+        );
       }
     }
     load();
-  }, []);
+  }, [dispatch]);
+
   return (
     <BrowserRouter>
-      <ToastNotification />
       <ScrollToTop />
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route
-            path="shop"
-            element={
-              <Shop
-                loading={loading}
-                error={error}
-                setLoading={setLoading}
-                setError={setError}
-              />
-            }
-          />
-          <Route
-            path="deals"
-            element={
-              <Deals
-                loading={loading}
-                error={error}
-                setLoading={setLoading}
-                setError={setError}
-              />
-            }
-          />
-          <Route path="category" element={<Categories />} />
-          <Route path="shop/:category" element={<Category />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="search" element={<Search />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="wishlist" element={<Wishlist />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="login" element={<Login />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="account" element={<ManageAccount />}>
-            <Route index element={<AccountOverview />} />
-            <Route path="my-orders" element={<Order />} />
-            <Route path="addresses" element={<Addresses />} />
-            <Route path="payment-methods" element={<PaymentMethods />} />
-            <Route path="security" element={<Security />} />
+      <Suspense fallback={<LoadingSkeleton />}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="shop" element={<Shop />} />
+            <Route path="deals" element={<Deals />} />
+            <Route path="category" element={<Categories />} />
+            <Route path="shop/:category" element={<Category />} />
+            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="search" element={<Search />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="wishlist" element={<Wishlist />} />
+            <Route path="checkout" element={<Checkout />} />
+            <Route path="login" element={<Login />} />
+            <Route path="account" element={<ManageAccount />}>
+              <Route index element={<AccountOverview />} />
+              <Route path="my-orders" element={<Order />} />
+              <Route path="addresses" element={<Addresses />} />
+              <Route path="payment-methods" element={<PaymentMethods />} />
+              <Route path="security" element={<Security />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

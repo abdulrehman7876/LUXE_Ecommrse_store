@@ -14,25 +14,39 @@ export default function Search() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { sortBy, setSortBy, filters } = useApp();
+  const { sortBy, setSortBy, filters, resetFilters } = useApp();
+
+  useEffect(() => {
+    resetFilters();
+  }, [resetFilters]);
 
   useEffect(() => {
     if (!query.trim()) return;
+
+    let current = true;
 
     async function search() {
       setLoading(true);
       setError(null);
       try {
         const data = await searchProducts(query, { limit: 50 });
+        if (!current) return;
         setProducts(data.products);
       } catch {
+        if (!current) return;
         setError("Search failed. Please try again.");
         setProducts([]);
       } finally {
-        setLoading(false);
+        if (current) {
+          setLoading(false);
+        }
       }
     }
     search();
+
+    return () => {
+      current = false;
+    };
   }, [query]);
 
   const processedProducts = useMemo(() => {

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { X, SlidersHorizontal } from "lucide-react";
 import { useApp } from "../../hooks/useApp";
 import { formatCategoryName } from "../../utils/format";
@@ -59,7 +58,6 @@ export default function ProductFilters({
                   onChange={() => {
                     handleChange("category", slug);
                     navigate(`/shop/${slug}`);
-                    // console.log("pp:", slug);
                   }}
                   className="accent-brand-900"
                 />

@@ -17,10 +17,12 @@ import PriceDisplay from "../components/ui/PriceDisplay";
 import QuantitySelector from "../components/ui/QuantitySelector";
 import { ProductDetailSkeleton } from "../components/ui/LoadingSkeleton";
 import { getStockStatus, formatCategoryName } from "../utils/format";
+import { useSelector } from "react-redux";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const allProducts = useSelector((state) => state.data.allProductsSlice);
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,31 +33,71 @@ export default function ProductDetail() {
   const inWishlist = product ? isInWishlist(product.id) : false;
 
   useEffect(() => {
+    setQuantity(1);
+  }, [id]);
+
+  useEffect(() => {
+    let current = true;
+    const numericId = Number(id);
+    const fromStore = allProducts.find((item) => item.id === numericId);
+
+    if (fromStore) {
+      setProduct(fromStore);
+      setRelated(
+        allProducts
+          .filter(
+            (item) =>
+              item.category === fromStore.category && item.id !== fromStore.id,
+          )
+          .slice(0, 4),
+      );
+      setLoading(false);
+      setError(null);
+      return () => {
+        current = false;
+      };
+    }
+
     async function load() {
       setLoading(true);
       setError(null);
       try {
         const data = await getProduct(id);
+        if (!current) return;
         setProduct(data);
 
-        const relatedData = await getProductsByCategory(data.category, {
-          limit: 5,
-        });
-        setRelated(
-          relatedData.products.filter((p) => p.id !== data.id).slice(0, 4),
+        const relatedFromStore = allProducts.filter(
+          (item) => item.category === data.category && item.id !== data.id,
         );
+        if (relatedFromStore.length > 0) {
+          setRelated(relatedFromStore.slice(0, 4));
+        } else {
+          const relatedData = await getProductsByCategory(data.category, {
+            limit: 5,
+          });
+          if (!current) return;
+          setRelated(
+            relatedData.products.filter((p) => p.id !== data.id).slice(0, 4),
+          );
+        }
       } catch (err) {
+        if (!current) return;
         if (err.status === 404) {
           setError("not-found");
         } else {
           setError("Failed to load product. Please try again.");
         }
       } finally {
-        setLoading(false);
+        if (current) {
+          setLoading(false);
+        }
       }
     }
     load();
-  }, [id]);
+    return () => {
+      current = false;
+    };
+  }, [id, allProducts]);
 
   if (loading) {
     return (
@@ -114,7 +156,6 @@ export default function ProductDetail() {
 
   return (
     <div className="container-custom py-8 lg:py-12">
-      {/* Breadcrumb */}
       <nav className="mb-8 text-sm text-brand-500" aria-label="Breadcrumb">
         <ol className="flex flex-wrap items-center gap-2">
           <li>
@@ -131,7 +172,7 @@ export default function ProductDetail() {
           <li>/</li>
           <li>
             <Link
-              to={`/category/${product.category}`}
+              to={`/shop/${product.category}`}
               className="hover:text-brand-800"
             >
               {formatCategoryName(product.category)}
@@ -249,7 +290,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Specifications */}
       <div className="mt-16 border-t border-brand-100 pt-12">
         <h2 className="text-xl font-bold text-brand-900">
           Product Information
@@ -280,7 +320,6 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Reviews */}
       {product.reviews?.length > 0 && (
         <div className="mt-16 border-t border-brand-100 pt-12">
           <h2 className="text-xl font-bold text-brand-900">
@@ -318,7 +357,6 @@ export default function ProductDetail() {
         </div>
       )}
 
-      {/* Related Products */}
       {related.length > 0 && (
         <div className="mt-16 border-t border-brand-100 pt-12">
           <h2 className="text-xl font-bold text-brand-900">Related Products</h2>

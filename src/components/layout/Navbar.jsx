@@ -3,10 +3,10 @@ import { Link, NavLink } from "react-router-dom";
 import { Heart, ShoppingBag, User, Menu, X } from "lucide-react";
 import { useApp } from "../../hooks/useApp";
 import SearchBar from "../ui/SearchBar";
-import { useDispatch, useSelector } from "react-redux";
-import Account from "../../pages/Account";
-import authService from "../../appwrite/Auth";
+import authService from "../../appwrite/auth";
 import { logOut } from "../../store/authSlice";
+import { useDispatch, useSelector, useStore } from "react-redux";
+import { stopSync } from "../../store/cartSync";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -16,18 +16,17 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { status, userData } = useSelector((state) => state.auth);
+  const { status, userData, authChecked } = useSelector((state) => state.auth);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openUser, setOpenUser] = useState(false);
   const { cartCount, wishlist } = useApp();
   const dispatch = useDispatch();
+  const store = useStore();
   const closeMobile = () => setMobileOpen(false);
 
   const popupRef = useRef(null);
 
   useEffect(() => {
-    console.log(userData);
-
     function handleClickOutside(event) {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         setOpenUser(false);
@@ -40,10 +39,10 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  const handleLogout = () => {
-    authService.logout().then(() => {
-      dispatch(logOut());
-    });
+  const handleLogout = async () => {
+    await stopSync(store);
+    await authService.logout();
+    dispatch(logOut());
   };
 
   return (
@@ -69,7 +68,7 @@ export default function Navbar() {
                 to={link.to}
                 className={({ isActive }) =>
                   `text-sm font-medium transition-colors ${
-                    link.to === window.location.pathname && isActive
+                    isActive
                       ? "text-brand-900"
                       : "text-brand-500 hover:text-brand-900"
                   }`
@@ -112,7 +111,12 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            {status ? (
+            {!authChecked ? (
+              <div
+                className="hidden h-10 w-10 animate-pulse rounded-lg bg-brand-100 sm:flex"
+                aria-hidden="true"
+              />
+            ) : status ? (
               <div
                 onClick={() => setOpenUser(!openUser)}
                 ref={popupRef}
@@ -178,6 +182,7 @@ export default function Navbar() {
           >
             {navLinks.map((link) => (
               <NavLink
+                end
                 key={link.to}
                 to={link.to}
                 onClick={closeMobile}
@@ -190,7 +195,11 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
-            {status ? (
+            {!authChecked ? (
+              <div className="py-3 text-base font-medium text-brand-400">
+                Account
+              </div>
+            ) : status ? (
               <div
                 onClick={() => setOpenUser(!openUser)}
                 ref={popupRef}

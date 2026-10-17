@@ -12,73 +12,47 @@ export class AuthService {
   }
 
   async createAccount({ email, password, name }) {
-    try {
-      const userAccount = await this.account.create(
-        ID.unique(),
-        email,
-        password,
-        name,
-      );
-      if (userAccount) {
-        return this.login({ email, password });
-      } else {
-        return userAccount;
-      }
-    } catch (error) {
-      throw error;
+    const userAccount = await this.account.create(
+      ID.unique(),
+      email,
+      password,
+      name,
+    );
+    if (userAccount) {
+      return this.login({ email, password });
     }
+    return userAccount;
   }
 
   async login({ email, password }) {
-    try {
-      return await this.account.createEmailPasswordSession(email, password);
-    } catch (error) {
-      throw error;
-    }
+    return this.account.createEmailPasswordSession(email, password);
   }
+
   async getCurrentUser() {
     try {
       return await this.account.get();
-    } catch (error) {
-      throw error;
-    }
-    return null;
-  }
-  async logout() {
-    try {
-      await this.account.deleteSessions();
-    } catch (error) {
-      throw error;
-    }
-  }
-  async updateName(name) {
-    try {
-      const user = await this.account.updateName({ name });
-      return user;
-    } catch (error) {
-      console.error("Error updating name: ", error);
-      throw error;
+    } catch {
+      return null;
     }
   }
 
-  async updateEmail({ email, password }) {
-    try {
-      const user = await this.account.updateEmail({ email, password });
-      return user;
-    } catch (error) {
-      throw error;
-    }
+  async logout() {
+    await this.account.deleteSessions();
   }
+
+  async updateName(name) {
+    return this.account.updateName({ name });
+  }
+
+  async updateEmail({ email, password }) {
+    return this.account.updateEmail({ email, password });
+  }
+
   async updatePassword({ currentPassword, newPassword }) {
-    try {
-      const user = await this.account.updatePassword({
-        password: newPassword,
-        oldPassword: currentPassword,
-      });
-      return user;
-    } catch (error) {
-      throw error;
-    }
+    return this.account.updatePassword({
+      password: newPassword,
+      oldPassword: currentPassword,
+    });
   }
 }
 

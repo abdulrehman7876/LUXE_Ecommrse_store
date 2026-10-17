@@ -6,7 +6,7 @@ const conf = {
     import.meta.env.VITE_APPWRITE_COLLECTION_CART_ID,
   ),
   appwriteCollectionWishlistId: String(
-    import.meta.env.VITE_APPWRITE_COLLECTION_WSIHLIST_ID,
+    import.meta.env.VITE_APPWRITE_COLLECTION_WISHLIST_ID,
   ),
 };
 

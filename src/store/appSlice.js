@@ -1,7 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, nanoid } from "@reduxjs/toolkit";
 import { loadCart, loadWishlist } from "../utils/storage";
-import { useSelector } from "react-redux";
-import service from "../appwrite/config";
+
 export const initialFilters = {
   category: "",
   minPrice: undefined,
@@ -52,6 +51,15 @@ const appSlice = createSlice({
     clearCart(state) {
       state.cart = [];
     },
+    setCart(state, action) {
+      state.cart = action.payload;
+    },
+    setWishlist(state, action) {
+      state.wishlist = action.payload;
+    },
+    clearWishlist(state) {
+      state.wishlist = [];
+    },
     toggleWishlist(state, action) {
       const product = action.payload;
       const exists = state.wishlist.some((item) => item.id === product.id);
@@ -77,7 +85,7 @@ const appSlice = createSlice({
       state.sortBy = action.payload;
     },
     addToast(state, action) {
-      state.toasts.push({ id: Date.now(), ...action.payload });
+      state.toasts.push({ id: nanoid(), ...action.payload });
     },
     removeToast(state, action) {
       state.toasts = state.toasts.filter(
@@ -92,6 +100,9 @@ export const {
   removeFromCart,
   updateCartQuantity,
   clearCart,
+  setCart, // new
+  setWishlist, // new
+  clearWishlist, // new
   toggleWishlist,
   removeFromWishlist,
   setSearchQuery,
@@ -100,8 +111,6 @@ export const {
   setSortBy,
   addToast,
   removeToast,
-  setFeaturedCategories,
-  setCountMap,
 } = appSlice.actions;
 
 export default appSlice.reducer;

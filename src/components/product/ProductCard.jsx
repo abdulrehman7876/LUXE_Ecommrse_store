@@ -1,23 +1,42 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingBag } from "lucide-react";
-import { useApp } from "../../hooks/useApp";
+import { useDispatch, useSelector } from "react-redux";
 import Rating from "../ui/Rating";
 import PriceDisplay from "../ui/PriceDisplay";
 import { getStockStatus } from "../../utils/format";
-import { useSelector } from "react-redux";
-import service from "../../appwrite/config";
+import { addToCart, toggleWishlist, addToast } from "../../store/appSlice";
 
-export default function ProductCard({ product, listView = false }) {
-  const { addToCart, toggleWishlist, isInWishlist } = useApp();
-  const inWishlist = isInWishlist(product.id);
+function ProductCard({ product, listView = false }) {
+  const dispatch = useDispatch();
+  const inWishlist = useSelector((s) =>
+    s.app.wishlist.some((i) => i.id === product.id),
+  );
   const stock = getStockStatus(product.stock);
   const reviewCount = product.reviews?.length;
 
-  const { status } = useSelector((state) => state.auth);
   const stockColors = {
     success: "text-green-600 bg-green-50",
     warning: "text-amber-600 bg-amber-50",
     danger: "text-red-600 bg-red-50",
+  };
+
+  const handleAddToCart = () => {
+    if (product.stock <= 0) return;
+    dispatch(addToCart({ product, quantity: 1 }));
+    dispatch(
+      addToast({ message: `${product.title} added to cart`, type: "success" }),
+    );
+  };
+
+  const handleToggleWishlist = () => {
+    dispatch(toggleWishlist(product));
+    dispatch(
+      addToast({
+        message: `${product.title} ${inWishlist ? "removed from" : "added to"} wishlist`,
+        type: "info",
+      }),
+    );
   };
 
   if (listView) {
@@ -66,7 +85,7 @@ export default function ProductCard({ product, listView = false }) {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => toggleWishlist(product)}
+                onClick={handleToggleWishlist}
                 className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
                   inWishlist
                     ? "border-red-200 bg-red-50 text-red-500"
@@ -81,7 +100,7 @@ export default function ProductCard({ product, listView = false }) {
                 />
               </button>
               <button
-                onClick={() => addToCart(product)}
+                onClick={handleAddToCart}
                 disabled={product.stock <= 0}
                 className="inline-flex items-center gap-2 rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
               >
@@ -115,7 +134,7 @@ export default function ProductCard({ product, listView = false }) {
 
         <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <button
-            onClick={() => toggleWishlist(product)}
+            onClick={handleToggleWishlist}
             className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md transition-colors ${
               inWishlist
                 ? "bg-red-500 text-white"
@@ -129,27 +148,7 @@ export default function ProductCard({ product, listView = false }) {
 
         <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 transition-transform duration-300 group-hover:translate-y-0">
           <button
-            onClick={() => {
-              addToCart(product);
-              // service
-              //   .createCart(product)
-              //   .then((res) => console.log(res))
-              //   .catch((err) => console.log(err));
-              // service
-              //   .getCart({ product: product })
-              //   .then((res) =>
-              //     service
-              //       .updateCart({
-              //         product: product,
-              //         quantity: Math.min(
-              //           res.quantity + product.quantity,
-              //           product.stock,
-              //         ),
-              //       })
-              //       .then(),
-              //   )
-              //   .catch((err) => console.log(err));
-            }}
+            onClick={handleAddToCart}
             disabled={product.stock <= 0}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
@@ -189,3 +188,5 @@ export default function ProductCard({ product, listView = false }) {
     </article>
   );
 }
+
+export default memo(ProductCard);

@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { syncOnChange } from "./cartSync";
 import appReducer from "./appSlice";
 import { saveCart, saveWishlist } from "../utils/storage";
 import dataReducer from "./dataSlice";
@@ -12,8 +13,12 @@ export const store = configureStore({
   },
 });
 
+let prev = store.getState().app;
 store.subscribe(() => {
-  const { cart, wishlist } = store.getState().app;
-  saveCart(cart);
-  saveWishlist(wishlist);
+  const cur = store.getState().app;
+  if (cur.cart !== prev.cart) saveCart(cur.cart);
+  if (cur.wishlist !== prev.wishlist) saveWishlist(cur.wishlist);
+  prev = cur;
 });
+
+store.subscribe(() => syncOnChange(store));

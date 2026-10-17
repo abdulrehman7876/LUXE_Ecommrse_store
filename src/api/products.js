@@ -10,17 +10,6 @@ async function fetchJSON(url) {
   return response.json();
 }
 
-export async function getProducts(params = {}) {
-  const { limit = 30, skip = 0, sortBy, order } = params;
-  let url = `${BASE_URL}/products?limit=${limit}&skip=${skip}`;
-
-  if (sortBy) {
-    url = `${BASE_URL}/products?limit=${limit}&skip=${skip}&sortBy=${sortBy}&order=${order || "asc"}`;
-  }
-
-  return fetchJSON(url);
-}
-
 export async function getProduct(id) {
   return fetchJSON(`${BASE_URL}/products/${id}`);
 }
@@ -45,7 +34,7 @@ export async function searchProducts(query, params = {}) {
 }
 
 export async function getProductList(params = {}) {
-  const { limit = 100, skip = 0 } = params;
+  const { limit = 0, skip = 0 } = params;
   return fetchJSON(`${BASE_URL}/products?limit=${limit}&skip=${skip}`);
 }
 

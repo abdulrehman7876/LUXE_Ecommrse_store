@@ -1,15 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useApp } from "../hooks/useApp";
-import authService from "../appwrite/Auth";
-import { useDispatch, useSelector } from "react-redux";
+import authService from "../appwrite/auth";
 import { logIn, logOut } from "../store/authSlice";
+import { useDispatch, useSelector, useStore } from "react-redux";
+import { syncAfterLogin, syncAfterRegister } from "../store/cartSync";
 
 export default function Login() {
   const dispatch = useDispatch();
+  const store = useStore();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [error, setError] = useState("");
   const [data, setData] = useState({
     name: "",
     email: "",
@@ -25,7 +26,6 @@ export default function Login() {
   }, [status, navigate]);
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError("");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(data.email)) {
       if (isLogin) {
@@ -37,6 +37,7 @@ export default function Login() {
                 if (userData) {
                   navigate("/");
                   dispatch(logIn(userData));
+                  syncAfterLogin(userData, store);
                   showToast("Signed in successfully");
                   setData({
                     name: "",
@@ -62,6 +63,7 @@ export default function Login() {
                 if (userData) {
                   navigate("/");
                   dispatch(logIn(userData));
+                  syncAfterRegister(userData, store);
                   showToast("Signed in successfully");
                   setData({
                     name: "",
@@ -118,7 +120,7 @@ export default function Login() {
               </label>
               <input
                 id="name"
-                type="name"
+                type="text"
                 autoComplete="name"
                 value={data.name}
                 onChange={(e) =>
@@ -158,7 +160,7 @@ export default function Login() {
             <input
               id="login-password"
               type="password"
-              autoComplete={`${isLogin ? "new-password" : "current-password"}`}
+              autoComplete={isLogin ? "current-password" : "new-password"}
               value={data.password}
               onChange={(e) =>
                 setData((prev) => ({ ...prev, password: e.target.value }))
@@ -191,7 +193,7 @@ export default function Login() {
         <p className="mt-6 text-center text-sm text-brand-500">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
-            onClick={() => setIsLogin(false)}
+            onClick={() => setIsLogin(!isLogin)}
             className="font-medium text-brand-800 hover:underline cursor-pointer"
           >
             {isLogin ? "Sign Up" : "Sign In"}

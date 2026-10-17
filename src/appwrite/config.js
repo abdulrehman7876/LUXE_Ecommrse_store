@@ -1,5 +1,36 @@
 import conf from "../conf/conf";
-import { Client, Account, TablesDB, ID } from "appwrite";
+import { Client, TablesDB, Permission, Role } from "appwrite";
+
+// Keep only what the UI needs so one row stays small
+function slim(item) {
+  const {
+    id,
+    title,
+    thumbnail,
+    brand,
+    price,
+    discountPercentage,
+    stock,
+    rating,
+    category,
+    description,
+    quantity,
+  } = item;
+  const out = {
+    id,
+    title,
+    thumbnail,
+    brand,
+    price,
+    discountPercentage,
+    stock,
+    rating,
+    category,
+    description,
+  };
+  if (quantity !== undefined) out.quantity = quantity;
+  return out;
+}
 
 export class Service {
   client = new Client();
@@ -12,107 +43,46 @@ export class Service {
     this.tablesDB = new TablesDB(this.client);
   }
 
-  async createCart({ product, quantity = 1 }) {
+  async _getItems(tableId, userId) {
     try {
-      return await this.tablesDB.createRow({
+      const row = await this.tablesDB.getRow({
         databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionCartId,
-        rowId: ID.unique(),
-        data: {
-          product: JSON.stringify(product),
-          quantity: JSON.stringify(quantity),
-        },
+        tableId,
+        rowId: userId,
       });
+      return JSON.parse(row.items || "[]");
     } catch (error) {
+      if (error?.code === 404) return []; // user has no row yet
       throw error;
     }
   }
 
-  async updateCart({ product, quantity }) {
-    try {
-      return await this.tablesDB.updateRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionCartId,
-        rowId: product.id,
-        data: { product, quantity },
-      });
-    } catch (error) {
-      throw error;
-    }
+  async _saveItems(tableId, userId, items) {
+    const me = Role.user(userId);
+    return this.tablesDB.upsertRow({
+      databaseId: conf.appwriteDatabaseId,
+      tableId,
+      rowId: userId,
+      data: { items: JSON.stringify(items.map(slim)) },
+      permissions: [
+        Permission.read(me),
+        Permission.update(me),
+        Permission.delete(me),
+      ],
+    });
   }
 
-  async getCart({ product }) {
-    try {
-      return await this.tablesDB.getRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionCartId,
-        rowId: product.id,
-      });
-    } catch (error) {
-      throw error;
-    }
+  getCart(userId) {
+    return this._getItems(conf.appwriteCollectionCartId, userId);
   }
-
-  async deleteCart({ product }) {
-    try {
-      await this.tablesDB.deleteRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionCartId,
-        rowId: product.id,
-      });
-    } catch (error) {
-      throw error;
-    }
+  saveCart(userId, items) {
+    return this._saveItems(conf.appwriteCollectionCartId, userId, items);
   }
-
-  async createWishlist({ product }) {
-    try {
-      return await this.tablesDB.createRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionWishlistId,
-        rowId: product.id,
-        data: { product },
-      });
-    } catch (error) {
-      throw error;
-    }
+  getWishlist(userId) {
+    return this._getItems(conf.appwriteCollectionWishlistId, userId);
   }
-
-  async updateWishlist({ product }) {
-    try {
-      return await this.tablesDB.updateRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionWishlistId,
-        rowId: product.id,
-        data: { product },
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getWishlist({ product }) {
-    try {
-      return await this.tablesDB.getRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionWishlistId,
-        rowId: product.id,
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async deleteWishlist({ product }) {
-    try {
-      await this.tablesDB.deleteRow({
-        databaseId: conf.appwriteDatabaseId,
-        tableId: conf.appwriteCollectionWishlistId,
-        rowId: product.id,
-      });
-    } catch (error) {
-      throw error;
-    }
+  saveWishlist(userId, items) {
+    return this._saveItems(conf.appwriteCollectionWishlistId, userId, items);
   }
 }
 
