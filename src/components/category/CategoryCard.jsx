@@ -23,7 +23,7 @@ export default function CategoryCard({ category, productCount }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
       </div>
       <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-        <h3 className="text-lg font-semibold">{name}</h3>
+        <h3 className="sm:text-lg text-xs font-semibold">{name}</h3>
         {productCount !== undefined && (
           <p className="mt-0.5 text-sm text-white/80">
             {productCount} products

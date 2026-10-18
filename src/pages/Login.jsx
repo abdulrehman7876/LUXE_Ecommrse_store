@@ -171,17 +171,6 @@ export default function Login() {
             />
           </div>
 
-          {isLogin && (
-            <div className="flex justify-end">
-              <button
-                type="button"
-                className="text-sm text-brand-500 hover:text-brand-800"
-              >
-                Forgot password?
-              </button>
-            </div>
-          )}
-
           <button
             type="submit"
             className="w-full rounded-lg bg-brand-900 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-700 cursor-pointer"

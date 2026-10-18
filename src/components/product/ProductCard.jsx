@@ -132,7 +132,7 @@ function ProductCard({ product, listView = false }) {
           </span>
         )}
 
-        <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <div className="absolute right-3 top-3 flex flex-col gap-2 md:opacity-0 opacity-100 transition-opacity duration-300 group-hover:opacity-100">
           <button
             onClick={handleToggleWishlist}
             className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md transition-colors ${
@@ -146,13 +146,13 @@ function ProductCard({ product, listView = false }) {
           </button>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 transition-transform duration-300 group-hover:translate-y-0">
+        <div className="absolute inset-x-0 bottom-0 md:translate-y-full opacity-85 md:opacity-100 translate-y-0 p-3 transition-transform duration-300 group-hover:translate-y-0">
           <button
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-900 py-1.5 sm:py-2.5 sm:text-sm text-xs sm:font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
-            <ShoppingBag className="h-4 w-4" />
+            <ShoppingBag className="h-3 sm:h-4 w-4" />
             {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
           </button>
         </div>
