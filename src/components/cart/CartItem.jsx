@@ -78,7 +78,7 @@ export default function CartItem({ item }) {
         </div>
       </div>
 
-      <div className="block text-right shrink-0 w-20">
+      <div className="hidden sm:block text-right shrink-0 w-20">
         <p className="text-sm font-semibold text-brand-900">
           {formatPrice(subtotal)}
         </p>
