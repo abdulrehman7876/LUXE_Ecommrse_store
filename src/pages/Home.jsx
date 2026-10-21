@@ -73,8 +73,8 @@ function ProductScroller({ title, subtitle, products, loading }) {
   );
 }
 
-export default function Home() {
-  const { allProductsSlice, catalogLoading } = useSelector(
+export default function Home({ onRetry }) {
+  const { allProductsSlice, catalogLoading, catalogError } = useSelector(
     (state) => state.data,
   );
 
@@ -93,6 +93,24 @@ export default function Home() {
 
   return (
     <>
+      {catalogError && (
+        <div className="container-custom pt-6">
+          <div
+            className="flex flex-col items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+            role="alert"
+          >
+            <p className="text-sm text-amber-900">{catalogError}</p>
+            <button
+              type="button"
+              onClick={onRetry}
+              disabled={catalogLoading}
+              className="rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {catalogLoading ? "Loading..." : "Try again"}
+            </button>
+          </div>
+        </div>
+      )}
       <HeroSection />
       <FeaturedCategories />
 

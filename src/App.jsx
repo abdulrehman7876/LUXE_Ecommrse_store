@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
@@ -43,28 +43,55 @@ const Security = lazy(() =>
 export default function App() {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    async function load() {
-      dispatch(setCatalogStatus({ loading: true, error: null }));
-      try {
-        const [productsData, categoriesData] = await Promise.all([
-          getProductList({ limit: 0 }),
-          getCategories(),
-        ]);
-        dispatch(setAllProductsSlice(productsData.products));
-        dispatch(setFeaturedCategories(categoriesData));
-        dispatch(setCatalogStatus({ loading: false, error: null }));
-      } catch {
-        dispatch(
-          setCatalogStatus({
-            loading: false,
-            error: "Failed to load products. Please try again.",
-          }),
-        );
-      }
+  const loadCatalog = useCallback(async () => {
+    dispatch(setCatalogStatus({ loading: true, error: null }));
+
+    const [productsResult, categoriesResult] = await Promise.allSettled([
+      getProductList({ limit: 0 }),
+      getCategories(),
+    ]);
+
+    const products =
+      productsResult.status === "fulfilled"
+        ? productsResult.value.products
+        : null;
+    const categories =
+      categoriesResult.status === "fulfilled"
+        ? categoriesResult.value
+        : null;
+
+    if (products) {
+      dispatch(setAllProductsSlice(products));
     }
-    load();
+
+    if (categories) {
+      dispatch(setFeaturedCategories(categories));
+    } else if (products) {
+      dispatch(
+        setFeaturedCategories(
+          [...new Set(products.map((product) => product.category))].map(
+            (slug) => ({ slug }),
+          ),
+        ),
+      );
+    }
+
+    const failed =
+      productsResult.status === "rejected" ||
+      categoriesResult.status === "rejected";
+    dispatch(
+      setCatalogStatus({
+        loading: false,
+        error: failed
+          ? "Some catalog data could not be loaded. Please try again."
+          : null,
+      }),
+    );
   }, [dispatch]);
+
+  useEffect(() => {
+    loadCatalog();
+  }, [loadCatalog]);
 
   return (
     <BrowserRouter>
@@ -72,7 +99,7 @@ export default function App() {
       <Suspense fallback={<LoadingSkeleton />}>
         <Routes>
           <Route element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route index element={<Home onRetry={loadCatalog} />} />
             <Route path="shop" element={<Shop />} />
             <Route path="deals" element={<Deals />} />
             <Route path="category" element={<Categories />} />
