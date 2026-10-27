@@ -212,12 +212,16 @@ export default function Navbar() {
                   <Link
                     to="/account"
                     className="hover:text-brand-900 cursor-pointer"
+                    onClick={closeMobile}
                   >
                     Manage my account
                   </Link>
                   <button
                     className="hover:text-brand-900 cursor-pointer"
-                    onClick={handleLogout}
+                    onClick={() => {
+                      handleLogout();
+                      closeMobile();
+                    }}
                   >
                     Logout
                   </button>
