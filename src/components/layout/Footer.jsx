@@ -30,12 +30,12 @@ export default function Footer() {
       <div className="container-custom py-12 lg:py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <Link to="/" className="text-2xl font-bold tracking-tight text-brand-900">
-              LUXE
+            <Link to="/" className="text-2xl font-black tracking-[-0.08em] text-brand-900">
+              meloza<span className="text-accent">.</span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-brand-500">
-              Curated fashion and lifestyle products for the modern consumer.
-              Quality, style, and exceptional service — delivered to your door.
+              Everything you need, all in one place. Discover quality essentials,
+              trending finds, and everyday favorites for every moment.
             </p>
             <div className="mt-6 flex items-center gap-3">
               {[Share2, Globe, Mail, Video].map((Icon, i) => (
@@ -108,7 +108,7 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-brand-200 pt-8 sm:flex-row">
           <p className="text-sm text-brand-400">
-            &copy; {new Date().getFullYear()} LUXE. All rights reserved.
+            &copy; {new Date().getFullYear()} Meloza. All rights reserved.
           </p>
           <div className="flex items-center gap-3">
             <CreditCard className="h-5 w-5 text-brand-400" aria-hidden="true" />

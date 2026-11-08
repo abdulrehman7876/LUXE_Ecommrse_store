@@ -1,6 +1,6 @@
-# LUXE — Premium Online Store
+# Meloza Marketplace
 
-LUXE is a modern e-commerce storefront built with React and Vite. It showcases a premium shopping experience with a curated catalog, category browsing, product discovery, wishlist and cart management, and a polished responsive layout.
+Meloza is a modern e-commerce storefront built with React and Vite. It showcases a premium shopping experience with a curated catalog, category browsing, product discovery, wishlist and cart management, and a polished responsive layout.
 
 The app pulls product data from the DummyJSON API and uses Appwrite to persist cart and wishlist data per user, making it a practical foundation for a scalable online retail experience.
 

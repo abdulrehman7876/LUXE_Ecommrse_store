@@ -1,4 +1,9 @@
 const STORAGE_KEYS = {
+  cart: 'meloza_cart',
+  wishlist: 'meloza_wishlist',
+};
+
+const LEGACY_STORAGE_KEYS = {
   cart: 'luxe_cart',
   wishlist: 'luxe_wishlist',
 };
@@ -21,19 +26,21 @@ export function saveToStorage(key, value) {
 }
 
 export function loadCart() {
-  return loadFromStorage(STORAGE_KEYS.cart, []);
+  return loadFromStorage(STORAGE_KEYS.cart, loadFromStorage(LEGACY_STORAGE_KEYS.cart, []));
 }
 
 export function saveCart(cart) {
   saveToStorage(STORAGE_KEYS.cart, cart);
+  saveToStorage(LEGACY_STORAGE_KEYS.cart, cart);
 }
 
 export function loadWishlist() {
-  return loadFromStorage(STORAGE_KEYS.wishlist, []);
+  return loadFromStorage(STORAGE_KEYS.wishlist, loadFromStorage(LEGACY_STORAGE_KEYS.wishlist, []));
 }
 
 export function saveWishlist(wishlist) {
   saveToStorage(STORAGE_KEYS.wishlist, wishlist);
+  saveToStorage(LEGACY_STORAGE_KEYS.wishlist, wishlist);
 }
 
 export { STORAGE_KEYS };

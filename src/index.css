@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #fafafa;
-  --color-brand-100: #f5f5f5;
-  --color-brand-200: #e5e5e5;
-  --color-brand-300: #d4d4d4;
-  --color-brand-400: #a3a3a3;
-  --color-brand-500: #737373;
-  --color-brand-600: #525252;
-  --color-brand-700: #404040;
-  --color-brand-800: #262626;
-  --color-brand-900: #171717;
-  --color-accent: #171717;
-  --color-accent-hover: #404040;
-  --color-success: #16a34a;
-  --color-danger: #dc2626;
-  --color-warning: #d97706;
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #f5f4ff;
+  --color-brand-100: #ece9ff;
+  --color-brand-200: #d9d6ff;
+  --color-brand-300: #b8b2ff;
+  --color-brand-400: #8d83ff;
+  --color-brand-500: #6760d8;
+  --color-brand-600: #4f4aaa;
+  --color-brand-700: #3b378a;
+  --color-brand-800: #2f2d68;
+  --color-brand-900: #24245b;
+
+  --color-accent: #ff8a3d;
+  --color-accent-hover: #ef7d2a;
+  --color-success: #16865b;
+  --color-danger: #d94b4b;
+  --color-warning: #f5b942;
 }
 
 @layer base {
@@ -25,12 +27,20 @@
   }
 
   body {
-    @apply bg-white text-brand-800 antialiased;
+    @apply bg-[#fff9f2] text-brand-900 antialiased;
     font-family: var(--font-sans);
   }
 
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-brand-800;
+    @apply outline-2 outline-offset-2 outline-brand-900;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
   }
 }
 

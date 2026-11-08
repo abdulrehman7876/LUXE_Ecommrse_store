@@ -95,9 +95,9 @@ export default function Login() {
         <div className="text-center">
           <Link
             to="/"
-            className="text-2xl font-bold tracking-tight text-brand-900"
+            className="text-2xl font-black tracking-[-0.08em] text-brand-900"
           >
-            LUXE
+            meloza<span className="text-accent">.</span>
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-brand-900">
             {isLogin ? "Welcome" : "Create Account"}
@@ -105,7 +105,7 @@ export default function Login() {
           <p className="mt-2 text-sm text-brand-500">
             {isLogin
               ? "Sign in to access your account and orders"
-              : "Join LUXE for exclusive offers and faster checkout"}
+              : "Join Meloza for exclusive offers and faster checkout"}
           </p>
         </div>
 

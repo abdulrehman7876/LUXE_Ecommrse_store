@@ -16,7 +16,7 @@ export default function CartSummary({ showCheckout = true }) {
 
   const handlePromo = (e) => {
     e.preventDefault();
-    if (promoCode.toUpperCase() === "LUXE10") {
+    if (promoCode.toUpperCase() === "MELOZA10") {
       setPromoApplied(true);
       showToast("Promo code applied! 10% discount", "success");
     } else if (promoCode) {
@@ -82,7 +82,7 @@ export default function CartSummary({ showCheckout = true }) {
             Apply
           </button>
         </div>
-        <p className="mt-1.5 text-xs text-brand-400">Try code: LUXE10</p>
+        <p className="mt-1.5 text-xs text-brand-400">Try code: MELOZA10</p>
       </form>
 
       {showCheckout && (

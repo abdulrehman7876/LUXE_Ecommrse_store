@@ -16,9 +16,9 @@ function ProductCard({ product, listView = false }) {
   const reviewCount = product.reviews?.length;
 
   const stockColors = {
-    success: "text-green-600 bg-green-50",
-    warning: "text-amber-600 bg-amber-50",
-    danger: "text-red-600 bg-red-50",
+    success: "text-green-700 bg-green-50",
+    warning: "text-amber-700 bg-amber-50",
+    danger: "text-red-700 bg-red-50",
   };
 
   const handleAddToCart = () => {
@@ -41,13 +41,13 @@ function ProductCard({ product, listView = false }) {
 
   if (listView) {
     return (
-      <article className="group flex gap-4 rounded-xl border border-brand-100 bg-white p-4 transition-shadow hover:shadow-md sm:gap-6">
+      <article className="group flex gap-4 rounded-2xl border border-brand-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:gap-6">
         <Link to={`/product/${product.id}`} className="shrink-0">
-          <div className="h-32 w-32 overflow-hidden rounded-lg bg-brand-50 sm:h-40 sm:w-40">
+          <div className="h-32 w-32 overflow-hidden rounded-xl bg-brand-50 sm:h-40 sm:w-40">
             <img
               src={product.thumbnail}
               alt={product.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />
           </div>
@@ -102,7 +102,7 @@ function ProductCard({ product, listView = false }) {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock <= 0}
-                className="inline-flex items-center gap-2 rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ShoppingBag className="h-4 w-4" />
                 Add to Cart
@@ -115,24 +115,24 @@ function ProductCard({ product, listView = false }) {
   }
 
   return (
-    <article className="group relative flex flex-col rounded-xl border border-brand-100 bg-white transition-shadow hover:shadow-md">
-      <div className="relative aspect-square overflow-hidden rounded-t-xl bg-brand-50">
+    <article className="group relative flex flex-col rounded-2xl border border-brand-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-brand-50">
         <Link to={`/product/${product.id}`}>
           <img
             src={product.thumbnail}
             alt={product.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
         </Link>
 
         {product.discountPercentage > 0 && (
-          <span className="absolute left-3 top-3 rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-3 top-3 rounded-md bg-accent px-2 py-1 text-xs font-semibold text-white">
             -{Math.round(product.discountPercentage)}%
           </span>
         )}
 
-        <div className="absolute right-3 top-3 flex flex-col gap-2 md:opacity-0 opacity-100 transition-opacity duration-300 group-hover:opacity-100">
+        <div className="absolute right-3 top-3 flex flex-col gap-2 opacity-100 transition-opacity duration-300 md:opacity-0 group-hover:opacity-100">
           <button
             onClick={handleToggleWishlist}
             className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md transition-colors ${
@@ -146,13 +146,13 @@ function ProductCard({ product, listView = false }) {
           </button>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 md:translate-y-full opacity-85 md:opacity-100 translate-y-0 p-3 transition-transform duration-300 group-hover:translate-y-0">
+        <div className="absolute inset-x-0 bottom-0 translate-y-0 p-3 opacity-100 transition-transform duration-300 md:translate-y-full md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
           <button
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-900 py-1.5 sm:py-2.5 sm:text-sm text-xs sm:font-medium text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-900 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-50 sm:py-2.5 sm:text-sm"
           >
-            <ShoppingBag className="h-3 sm:h-4 w-4" />
+            <ShoppingBag className="h-3 w-3 sm:h-4 sm:w-4" />
             {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
           </button>
         </div>
